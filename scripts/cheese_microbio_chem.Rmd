@@ -1,0 +1,179 @@
+---
+title: "Cheese microbial plate counts & chemical analysis data"
+author: "L. Bettera & M. Dreier"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+
+```{r cheese microbes & chemical packages, include=FALSE}
+source('genfuncs.R')
+Rdeps = c("openxlsx", "gridExtra", "plyr", "tidyverse",
+          "outliers", "reshape2", "stats", "FactoMineR",
+          "factoextra", "agricolae", "missMDA",
+          'ggplot2', 'patchwork')
+checkpackages(Rdeps)
+```
+
+
+```{r}
+# define paths explicitly
+subset_fp <- file.path(getwd(), "..", "data", "cheese", "pivot")
+
+meta_0d_fp <- file.path(subset_fp, "meta_microbes_0d_data.csv")
+micro_0d_fp <- file.path(subset_fp, "piv_microbes_0d_data.csv")
+
+meta_1d_fp <- file.path(subset_fp, "meta_microbes_1d_data.csv")
+micro_1d_fp <- file.path(subset_fp, "piv_microbes_1d_data.csv")
+
+meta_chem_1d_fp <- file.path(subset_fp, "meta_chem_1d_data.csv")
+chem_1d_fp <- file.path(subset_fp, "piv_chem_1d_data.csv")
+
+meta_60d_fp <- file.path(subset_fp, "meta_microbes_60d_data.csv")
+micro_60d_fp <- file.path(subset_fp, "piv_microbes_60d_data.csv")
+
+meta_120d_fp <- file.path(subset_fp, "meta_microbes_120d_data.csv")
+micro_120d_fp <- file.path(subset_fp, "piv_microbes_120d_data.csv")
+
+meta_chem_120d_fp <- file.path(subset_fp, "meta_chem_120d_data.csv")
+chem_120d_fp <- file.path(subset_fp, "piv_chem_120d_data.csv")
+```
+
+
+### Data import and sub-setting
+
+```{r data import and subsetting}
+micro_0d <- import_and_select_PCA_data(
+              micro_0d_fp, meta_0d_fp, 
+              select_samples = c("MilkTreatment", "raw")
+              )
+
+
+micro_1d <- import_and_select_PCA_data(
+              micro_1d_fp, meta_1d_fp, 
+              select_samples = c("MilkTreatment", "raw"),
+              # remove the entire 304 sample due to missing measurements
+              rm_samples = c("EH_304_cheese_1d")
+              )
+
+
+chem_1d <- import_and_select_PCA_data(
+            chem_1d_fp, meta_chem_1d_fp, 
+            select_samples = c("MilkTreatment", "raw"),
+            rm_samples = c("EH_304_cheese_1d"),
+            ## remove some highly correlated features
+            redundant_f = c("L.Lactic.acid.proportion.of.TLA", "Lactic.acid..total.")
+            )
+
+# make sure we don't have the meta data twice
+meta_len <- length(names(read.csv(meta_chem_1d_fp))) + 1
+chem_1d_data <- chem_1d[,c(1, meta_len:length(chem_1d))]
+
+# merge chemical and microbes data
+dataset_1d <- merge(micro_1d, chem_1d_data, by = "sampleID")
+
+
+micro_60d <- import_and_select_PCA_data(
+              micro_60d_fp, meta_60d_fp,
+              select_samples = c("MilkTreatment", "raw")
+              )
+
+
+micro_120d <- import_and_select_PCA_data(
+                micro_120d_fp, meta_120d_fp,
+                select_samples = c("MilkTreatment", "raw")
+                )
+
+# remove some highly correlated features & features with NAs (Force & Fracture)
+hcorr_fc <- c("L.Lactic.acid.proportion.of.TLA",
+              "Lactic.acid..total.",
+              "Total.volatile.carboxylic.acids",
+              "Biogenic.amine",
+              "Chloride",
+              "Force.at.33",
+              "Force.at.fracture",
+              "Fracture.deformation")
+
+chem_120d <- import_and_select_PCA_data(chem_120d_fp, meta_chem_120d_fp, 
+                                        select_samples = c("MilkTreatment", "raw"),
+                                        redundant_f = hcorr_fc
+                                        )
+
+# make sure we don't have the meta data twice
+meta_len <- length(names(read.csv(meta_chem_120d_fp))) + 1
+chem_120d_data <- chem_120d[,c(1, meta_len:length(chem_120d))]
+
+# merge chemical and microbes data
+dataset_120d <- merge(micro_120d, chem_120d_data, by = "sampleID")
+```
+
+```{r PCA vat milk}
+p1 <- draw_PCA(micro_0d, meta_0d_fp, title = "Vat milk")
+```
+
+```{r PCA cheese 1d}
+p2 <- draw_PCA(dataset_1d, meta_1d_fp, title = "Cheese 1d")
+```
+
+```{r PCA cheese 60d}
+p3 <- draw_PCA(micro_60d, meta_60d_fp, title = "Cheese 60d")
+```
+
+```{r PCA cheese 120d}
+p4 <- draw_PCA(dataset_120d, meta_120d_fp, title = "Cheese 120d")
+```
+
+```{r create Figure (of) 8, fig.width=12,fig.height=10}
+fig8 <- (p1 + p2 + p3 + p4) + 
+         plot_layout(guides = 'collect') + 
+         plot_annotation(tag_levels = "A") &
+         theme(plot.tag = element_text(size = 18, face = "bold"))
+```
+
+```{r, fig.width=12,fig.height=10}
+
+p_ranges_x <- c(ggplot_build(fig8[[1]])$layout$panel_scales_x[[1]]$range$range,
+                ggplot_build(fig8[[2]])$layout$panel_scales_x[[1]]$range$range,
+                ggplot_build(fig8[[3]])$layout$panel_scales_x[[1]]$range$range,
+                ggplot_build(fig8[[4]])$layout$panel_scales_x[[1]]$range$range
+                )
+
+p_ranges_y <- c(ggplot_build(fig8[[1]])$layout$panel_scales_y[[1]]$range$range,
+                ggplot_build(fig8[[2]])$layout$panel_scales_y[[1]]$range$range,
+                ggplot_build(fig8[[3]])$layout$panel_scales_y[[1]]$range$range,
+                ggplot_build(fig8[[4]])$layout$panel_scales_y[[1]]$range$range
+                )
+
+# use the same x and y axis limits for all plots
+fig8 & 
+  xlim(min(p_ranges_x), max(p_ranges_x)) & 
+  ylim(min(p_ranges_y), max(p_ranges_y))
+
+ggsave(filename = file.path(getwd(), "..", "figures", "Figure_8.jpeg"), height = 10 , width = 10*1.2)
+```
+
+### Supplementary Plots
+
+```{r, fig.width=12,fig.height=10}
+sf2 <- supplementary_plots(micro_0d, meta_0d_fp, title = "Vat milk")
+ggsave(filename = file.path(getwd(), "..", "figures", "Supplementary_Figure_2.jpeg"), height = 10 , width = 10*1.2)
+sf2
+```
+
+```{r, fig.width=12,fig.height=10}
+sf4 <- supplementary_plots(dataset_1d, meta_1d_fp, title = "Cheese 1d")
+ggsave(filename = file.path(getwd(), "..", "figures", "Supplementary_Figure_4.jpeg"), height = 10 , width = 10*1.2)
+sf4
+```
+
+```{r, fig.width=12,fig.height=10}
+sf3 <- supplementary_plots(micro_60d, meta_60d_fp, title = "Cheese 60d")
+ggsave(filename = file.path(getwd(), "..", "figures", "Supplementary_Figure_3.jpeg"), height = 10 , width = 10*1.2)
+sf3
+```
+
+```{r, fig.width=12,fig.height=10}
+sf5 <- supplementary_plots(dataset_120d, meta_120d_fp, title = "Cheese 120d")
+ggsave(filename = file.path(getwd(), "..", "figures", "Supplementary_Figure_5.jpeg"), height = 10 , width = 10*1.2)
+sf5
+```

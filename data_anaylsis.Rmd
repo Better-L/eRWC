@@ -1,0 +1,34 @@
+---
+title: "Overview data analysis"
+author: "L. Bettera & M. Dreier"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+```{r main setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Microbial counts of source material and final cultures
+
+```{r, child='scripts/cultures_microbio.Rmd'}
+```
+
+# 16S rRNA gene amplicon sequencing - cultures
+
+```{r, child='scripts/cultures_ngs.Rmd'}
+```
+
+# 16S rRNA gene amplicon sequencing - cheese
+
+```{r, child='scripts/cheese_ngs.Rmd'}
+```
+
+# Microbial counts and chemical analysis of vat milk/cheese
+
+```{r, child='scripts/cheese_microbio_chem.Rmd'}
+```
+
+```{r}
+sessionInfo()
+```

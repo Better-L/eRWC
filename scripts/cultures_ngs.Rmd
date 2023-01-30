@@ -1,0 +1,256 @@
+---
+title: "Cultures: 16S rRNA gene amplicon sequencing"
+author: "L. Bettera & M. Dreier"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+
+```{r ngs packages, include=FALSE}
+source('genfuncs.R')
+Rdeps = c("BiocManager", "openxlsx",
+          "plyr", "tidyverse", 
+          "stats", 'ggtext', 'magrittr',
+          'patchwork', 'rjson')
+Biocdeps = c("phyloseq")
+checkpackages(Rdeps)
+checkBiocpackages(Biocdeps)
+```
+
+This R script will analyze 16S results from ASV counts to graphical visualization
+mainly using phyloseq http://joey711.github.io/phyloseq/import-data.html
+
+## Cultures
+
+```{r  cultures NGS data import}
+# import raw sequences that were already quality filtered as described in Dreier et al 2022
+fp <- file.path(getwd(), "..", "data", "cultures", "ngs", "ASV_table.xlsx")
+cult_physeq = load_ngs_data(fp)
+```
+
+
+```{r}
+# Counts to relative abundance
+# ASV counts transformed to relative abundance (%)
+# Note: raw sequences were already quality filtered as described in Dreier et al 2022
+# thus taxa are not further trimmed for ordination and diversity analysis
+# since even low abundant species are informative
+cult_physeqR  = transform_sample_counts(cult_physeq, function(x) x/sum(x)*100 )
+```
+
+
+```{r}
+# font sizes for plots
+yaxis_tick_label_size = 10
+yaxis_label_size = 10
+
+title_size = 14
+subtitle_size = 14
+xaxis_tick_label_size = 12
+```
+
+
+### Distance Ordination Analysis
+
+```{r cultures ordinationPlot1}
+# bray = "Bray-Curtis dissimilarity"
+# NMDS = Non-metric Multidimensional Scaling
+ordi = ordinate(cult_physeqR, method = "NMDS", distance = "bray")
+dnmds_plt <- plot_ordination(cult_physeqR, ordi, "sample_ID", color = "sample_type")
+# replace Na with "None" in milk_treatment factor
+NMDS_df <- dnmds_plt$data %>% replace_na(list(milk_treatment = "None"))
+# plot with all the sample_types
+p_ord1 <- ggplot(NMDS_df,
+                 aes(NMDS1, NMDS2,
+                     color = milk_treatment,
+                     shape = sample_type)) +
+          geom_point(size = 6) +
+          scale_color_manual(values = c("H" = '#e66101',
+                                        "HS" = '#fdb863',
+                                        "None" = '#5e3c99')) +
+          labs(title = "NMDS (Bray-Curtis), milk & cultures") +
+          guides(color = guide_legend(order = 1), 
+                 shape = guide_legend(order = 2)) +
+          theme(text = element_text(size = xaxis_tick_label_size),
+                plot.title = element_text(size = title_size, hjust = 0.5, )) +
+          geom_text(mapping = aes(label = culture_type), color = 001,
+                    vjust = 0, hjust = 1.5, size = xaxis_tick_label_size/2)
+```
+### Diversity Plot
+```{r cultures diversityPlot}
+# Diversity parameters plot----
+# from phyloseq  https://joey711.github.io/phyloseq/plot_richness-examples.html
+# it require the dataset with counts, not rel. ab.
+physeq_div <- prune_taxa(taxa_sums(cult_physeq) > 1, cult_physeq) # just in case the initial database should not have taxa with count=0
+
+# replace Na with "None"
+physeq_div@sam_data <- physeq_div@sam_data %>% replace_na(list(milk_treatment = "None",
+                                        culture_type = "None"))
+# To summarize diversity values in table
+estimate_richness(physeq_div)
+
+p_div <-  plot_richness(physeq_div, x = "sample_type", color = "milk_treatment", shape = "culture_type") +
+          geom_point(size = 3, alpha = 0.5) +
+          scale_color_manual(values = c("H" = '#e66101',
+                                        "HS" = '#fdb863',
+                                        "None" = '#5e3c99')) +
+          theme(text = element_text(size = xaxis_tick_label_size),
+                plot.title = element_text(size = title_size, hjust = 0.5 ),
+                axis.title.x = element_blank()) +
+          guides(color = guide_legend(order = 1), 
+                 shape = guide_legend(order = 2)) +
+          ggtitle("Microbial diversity - milk & cultures")
+```
+
+### Relative abundances
+
+```{r cultures data preparation for plotting}
+# percentage thresholds used for filtering
+abund_thresh <- 1.0
+sp_res_th <- 0.6
+
+# Taxa agglomeration----
+# Differently to Ord. & Div. plots, in bar charts a taxa filter is necessary to show the most abundant species
+# Let's agglomerate at the Species level using the tax_glom function from phyloseq
+# It requires "Kingdom" to be the first column of our tax_table
+# (see probl. solved https://github.com/joey711/phyloseq/issues/1551)
+tax_table(cult_physeqR) <- tax_table(cult_physeqR)[,c(2:10,1)] # Re-order the columns
+
+# Let's agglomerate at the Species level
+# i.e. different ASV belonging to the same species will be agglomerated
+# their relative abundance will be summed
+# further the data frame is melted to long format for filtering and plotting
+cult_physeqR_tax <- cult_physeqR %>%
+  tax_glom(taxrank = "Species") %>%
+  psmelt()
+
+# Select only the natural whey and the enriched raw milk-whey culture samples 
+cult_physeqR_tax_samples = subset(cult_physeqR_tax, sample_type %in% c("eRWC", "NWC"))
+
+# create a mapper to replace old lactobacilli names in table
+fp = file.path(getwd(), "..", "data", "species_dict.json")
+species_dict <- fromJSON(file = fp, simplify = TRUE)
+
+# In order to get groups in the plots add a group category and rename replicates
+cult_physeqR_tax_samples <- cult_physeqR_tax_samples %>%
+  mutate(sample_subtype = substr(sample_ID, 1, nchar(sample_ID) - 2))  %>%
+  mutate(replicate = replicate - 1)
+
+# For plotting it looks nicer when the species names are separated by spaces
+cult_physeqR_tax_samples <- cult_physeqR_tax_samples %>%
+    mutate(Species = str_replace(Species, "_", " ")) %>%
+    # update new lactobacilli names
+    mutate(Species = recode_factor(Species, !!!species_dict)) %>%
+    # change Species to sp. for unknown species names
+    mutate(Species = str_replace(Species, "Species", "sp."))
+
+# group data frame by Species, calculate mean rel. abundance
+means <- ddply(cult_physeqR_tax_samples, ~Species, function(x) c(mean = mean(x$Abundance)))
+
+# get the species names with high and low average relative abundance, respectively
+# Species whose rel. abundance is higher than 1% (or threshold [abund_thresh] defined above)
+high_ab_sp <- means[means$mean >= abund_thresh, "Species"]
+# Species whose rel. abundance is less than 1%
+low_ab_sp <- means[means$mean < abund_thresh, "Species"]
+
+# Create two data frames with high and low avg. abundances
+cult_physeqR_tax_high <- cult_physeqR_tax_samples[cult_physeqR_tax_samples$Species %in% high_ab_sp,]
+cult_physeqR_tax_low <- cult_physeqR_tax_samples[cult_physeqR_tax_samples$Species %in% low_ab_sp,]
+
+# convert Species to a character vector from a factor because R
+cult_physeqR_tax_low$Species <- as.character(cult_physeqR_tax_low$Species)
+
+# group data frame by Species, calculate max rel. abundance
+maxs <- ddply(cult_physeqR_tax_low, ~Species, function(x) c(max = max(x$Abundance)))
+
+# find Species whose max. abundance is less than 0.6% [threshold "sp_res_th" defined above]
+remainder <- maxs[maxs$max <= sp_res_th,]$Species
+
+# change their name to "Other species"
+cult_physeqR_tax_low[cult_physeqR_tax_low$Species %in% remainder,]$Species <- 'Other species'
+```
+
+
+```{r}
+# vector to order the data frame, to make "other species" the last element of the legend in the low abundant species plot
+unique_sp <- unique(cult_physeqR_tax_low$Species)
+unique_sp <- unique_sp[unique_sp != "Other species"]
+ordered_species = append(unique_sp, "Other species")
+
+# use labels for element_markdown to use italics for species names (but not for "Other species")
+ordered_sp_labels <- as.vector(
+  sapply(
+    unique_sp,
+    FUN = function(X) if (grepl(" sp.", X)) paste0("*", strsplit(X, " sp."), "* sp.") else paste0("*", X, "*")
+    )
+  )
+ordered_sp_labels = append(ordered_sp_labels, "Other species")
+
+# sample_ID levels
+sampleid_vector <- c("NWC.2", "NWC.3", "NWC.4",
+                     "eRWC.y.2", "eRWC.y.3", "eRWC.y.4",
+                     "eRWC.o.2", "eRWC.o.3", "eRWC.o.4",
+                     "eRWC.H.y.2", "eRWC.H.y.3", "eRWC.H.y.4",
+                     "eRWC.H.o.2", "eRWC.H.o.3", "eRWC.H.o.4",
+                     "eRWC.HS.y.2", "eRWC.HS.y.3", "eRWC.HS.y.4",
+                     "eRWC.HS.o.2", "eRWC.HS.o.3", "eRWC.HS.o.4")
+
+# Colors are set manually
+species_colors <- c(
+    '#a50026','#d73027','#f46d43','#fdae61','#fee090',
+    '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#313695')
+
+# Define font size for both plots here
+yaxis_tick_label_size = 10
+yaxis_label_size = 10
+xaxis_tick_label_size = 12
+Xaxis_rot = 0
+df_sorter = c("Species", "sample_subtype")
+x_labels = c(".1",".2",".3")
+
+# High abundant species plot
+p1 <- draw_ha_stacked_plot(df = cult_physeqR_tax_high,
+                           sampleid_vector = sampleid_vector,
+                           x_factor = "sample_ID",
+                           x_labels = x_labels,
+                           species_colors = species_colors, 
+                           df_sorter = df_sorter,
+                           wrap_group = c("~sample_subtype"),
+                           abund_thresh = abund_thresh,
+                           sp_res_th = sp_res_th
+                           )
+
+# Low abundant species plot
+p2 <- draw_la_stacked_plot(df = cult_physeqR_tax_low,
+                           sampleid_vector = sampleid_vector,
+                           x_labels = x_labels,
+                           species_colors = species_colors,
+                           ordered_sp_labels = ordered_sp_labels,
+                           x_factor = "sample_ID",
+                           ordered_species = ordered_species,
+                           wrap_group = c("~sample_subtype"),
+                           abund_thresh = abund_thresh,
+                           sp_res_th = sp_res_th
+                           )
+```
+
+
+```{r create Figure 4, fig.width=18,fig.height=10}
+p_ord <-  p_ord1 + theme(legend.direction = "vertical", legend.position = "bottom", legend.box = "horizontal")
+fig4 <- (p_div | (p_ord / plot_spacer())) +
+         plot_layout(ncol = 2, widths = c(2, 1)) + 
+         plot_annotation(tag_levels = "A") &
+         theme(plot.tag = element_text(size = 18, face = "bold"))
+ggsave(filename = file.path(getwd(), "..", "figures", "Figure_4.jpeg"), height = 10 , width = 10 * 2)
+fig4
+```
+
+
+```{r create Figure 5, fig.width=12,fig.height=10}
+fig5 <- (p1 / p2) + 
+              plot_annotation(tag_levels = "A") &
+              theme(plot.tag = element_text(size = 18, face = "bold"))
+                  
+ggsave(filename = file.path(getwd(), "..", "figures", "Figure_5.jpeg"), height = 10 , width = 10 * 1.2)
+fig5
+```

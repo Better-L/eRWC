@@ -1,0 +1,271 @@
+---
+title: "Cultures microbial plate counts"
+author: "L. Bettera & M. Dreier"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: html_document
+---
+
+
+```{r mb packages, include=FALSE}
+source('genfuncs.R')
+Rdeps = c('openxlsx', 'plyr', 'gridExtra', 'tidyverse', 'outliers', 
+          "reshape2", "stats", "factoextra", "FactoMineR", "agricolae", 
+          'FSA', 'ggplot2', 'patchwork')
+checkpackages(Rdeps)
+```
+
+
+```{r  mb data import}
+# Uploading the files and creating subsets
+fp <- file.path(getwd(), "..", "data", "cultures", "microbes", "viable_counts.xlsx")
+df <- read.xlsx(fp, sheet = 1) # import in R the dataset (excel file) as dataframe
+
+# let's transform the first variable in factor (useful for data exploration by groups)
+df <- df %>% mutate_at(vars(sample, replicate),
+                       as.factor)
+# let's remove the repl. 1 because considered outlier from NGS analysis
+df <- subset(df, replicate != "1")
+df <- df[-2] # let's remove the "replicate" column
+```
+
+
+We analyzed 12 samples:
+
+1.  RM = raw milk
+
+2.  RM.H = raw milk heat treated (54°C for 54min)
+
+3.  eRM = enriched raw milk (spontaneous fermentation at 10°C for 21d)
+
+4.  eRM.H = enriched heated raw milk
+
+5.  eRM.HS = enriched heated, salted raw milk (5% v/w NaCl)
+
+6.  NWC = natural whey culture (thermophilic)
+
+7.  eRWC.y = enriched raw milk whey culture, young. Mix NWC-eRM (1:10), incubated at 38°C for 6h
+
+8.  eRWC.o = old, incubated at 38°C for 22h
+
+9.  eRWC.H.y = mix NWC-eRM.H (1:10), young
+
+10. eRWC.H.o = mix NWC-eRM.H (1:10), old
+
+11. eRWC.HS.y = mix NWC-eRM.HS (1:10), young
+
+12. eRWC.HS.o = mix NWC-eRM.HS (1:10), old
+
+Here is a summary statistic of the results divided for each sample:
+
+```{r summary statistics}
+# a function derived from "R in action" book
+mystats <- function(x, na.omit=TRUE){
+  if (na.omit)
+    x <- x[!is.na(x)]
+  n <- round(length(x), digits = 1)
+  mx <- round(max(x), digits = 1)
+  mn <- round(min(x), digits = 1)
+  m <- round(mean(x), digits = 1)
+  s <- round(sd(x), digits = 1)
+  return(c(n = n, mean = m, stdev = s, max = mx, min = mn))
+}
+
+dstats <- function(x)sapply(x, mystats)
+dfstats <- by(df[2:9],
+              list(sample = df$sample), dstats)
+dfstats
+
+```
+
+## Data analysis: RM and eRM
+
+### Boxplot
+
+This boxplot shows the spontaneous fermentation effect of RM on the concentration of different microbial groups.
+
+```{r boxplot1, dpi=96}
+# for boxplots, the dataset in melted form is preferred
+df2 <- melt(df, id = "sample", value.name = "CFU_mL")
+
+bp1 <-  ggplot(filter(df2, sample %in% c("RM", "eRM")),
+                   aes(x = variable,
+                       y = CFU_mL,
+                       fill = factor(sample, levels = c("RM", "eRM")))) +
+        geom_boxplot() +
+        scale_y_continuous(breaks = seq(0, 10, by = 1), limits = c(0, 10)) +
+        scale_fill_manual(name  = "Sample",
+                          breaks = c("RM", "eRM"),
+                          labels = c("RM", "eRM"),
+                          values = c("#ccece6", "#238b45")) +
+        theme(axis.title.x = element_blank()) +
+        theme(axis.title.y = element_text(size = 12)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
+        theme(axis.text.y = element_text(size = 14)) +
+        theme(panel.background = element_rect(fill = "white")) +
+        theme(panel.border = element_blank(),
+              panel.grid.major.y = element_line(color = "#C8C8C8"),
+              panel.grid.major.x = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.line = element_line(colour = "black")) +
+        theme(legend.text = element_text(size = 12),
+              legend.title = element_text(size = 12)) +
+        ylab("log CFU/mL")
+bp1
+```
+
+## Statistics
+
+Statistical analysis was performed in order to define whether the evaluated differences were significant. If the variances of the two groups resulted homogeneous to the Fisher's test, a Two Sample t-test was applied; alternatively a Welch t-test was used.
+
+```{r testing_hypotheses1}
+# variance homogeneity (for interpretation http://www.sthda.com/english/wiki/f-test-compare-two-variances-in-r)
+# If p-value>0.05 variances are homogeneous
+
+subdf2 <- filter(df2, sample %in% c("RM", "eRM"))
+m_vars = unique(subdf2$variable)
+
+for (x in m_vars) {
+  test_two_grps(x, subdf2)
+}
+```
+
+## Data analysis: RM.H, eRM.H and eRM.HS 
+
+### Boxplot
+
+Here is shown the microbial enrichment of RM.H, also with addition of salt.
+
+```{r boxplot2, dpi=96}
+bp2 <-  ggplot(filter(df2, sample %in% c("RM.H", "eRM.H", "eRM.HS")),
+               aes(x = variable,
+               y = CFU_mL,
+               fill = factor(sample, levels = c("RM.H", "eRM.H", "eRM.HS")))) +
+        geom_boxplot() +
+        scale_y_continuous(breaks = seq(0, 10, by = 1), limits = c(0, 10)) +
+        scale_fill_manual(name  = "Sample",
+                          breaks = c("RM.H", "eRM.H", "eRM.HS"),
+                          labels = c("RM.H", "eRM.H", "eRM.HS"),
+                          values = c("#bfd3e6", "#8c96c6", "#88419d")) +
+        theme(axis.title.x = element_blank()) +
+        theme(axis.title.y = element_text(size = 12)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
+        theme(axis.text.y = element_text(size = 14)) +
+        theme(panel.background = element_rect(fill = "white")) +
+        theme(panel.border = element_blank(),
+              panel.grid.major.y = element_line(color = "#C8C8C8"),
+              panel.grid.major.x = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.line = element_line(colour = "black")) +
+        theme(legend.text = element_text(size = 12),
+              legend.title = element_text(size = 12)) +
+        ylab("log CFU/mL")
+bp2
+```
+```{r overview boxplot, dpi=96}
+selected_samples = c("RM", "RM.H", "eRM", "eRM.H", "eRM.HS")
+
+over_bp <-  ggplot(filter(df2, sample %in% selected_samples),
+                   aes(x = variable,
+                       y = CFU_mL,
+                       fill = factor(sample, levels = selected_samples))) +
+            geom_boxplot() +
+            scale_y_continuous(breaks = seq(0, 10, by = 1), limits = c(0, 10)) +
+            scale_fill_manual(name  = "Sample",
+                              breaks = selected_samples,
+                              labels = selected_samples,
+                              values = c("#238b45", "#ccece6", "#bfd3e6", "#8c96c6", "#88419d")) +
+            theme(axis.title.x = element_blank()) +
+            theme(axis.title.y = element_text(size = 12)) +
+            theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
+            theme(axis.text.y = element_text(size = 14)) +
+            theme(panel.background = element_rect(fill = "white")) +
+            theme(panel.border = element_blank(),
+                  panel.grid.major.y = element_line(color = "#C8C8C8"),
+                  panel.grid.major.x = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  axis.line = element_line(colour = "black")) +
+            theme(legend.text = element_text(size = 12),
+                  legend.title = element_text(size = 12)) +
+            theme(legend.position = "right",
+                  legend.justification = "left",
+                  legend.direction = "vertical") + 
+            ylab("log CFU/mL")
+```
+
+
+### Statistics
+
+Since here there are more then 2 groups, a one-way ANOVA model was needed for the statistical analysis. The variance homogeneity was previously checked using the Bartlett's test. In case the assumptions of one-way ANOVA test are not met, a Kruskal-Wallis test is applied. A Multiple Mean Comparison test was eventually performed afterwards.
+
+```{r testing_hypotheses2}
+subdf3 <- filter(df2, sample %in% c("RM.H", "eRM.H", "eRM.HS"))
+m_vars = unique(subdf3$variable)
+
+for (x in m_vars) {
+  test_more_grps(x, subdf3)
+}
+```
+
+
+## Data analysis: NWC and final cultures 
+
+### Boxplot
+
+This boxplot shows the microbial composition of the final cultures, obtained by incubating the mixture of NWC and the enriched milks.
+
+```{r boxplot3, dpi=96}
+bp3 <-  ggplot(filter(df2, sample %in% c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y",
+                                        "eRWC.H.o", "eRWC.HS.y", "eRWC.HS.o")),
+                   aes(x = variable, 
+                       y = CFU_mL,
+                       fill = factor(sample, levels = c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y",
+                                                        "eRWC.H.o", "eRWC.HS.y", "eRWC.HS.o")))) +
+        geom_boxplot(position = position_dodge(0.7)) +
+        scale_y_continuous(breaks = seq(0, 10, by = 1), limits = c(0, 10)) +
+        scale_fill_manual(name  = "Sample",
+                          breaks = c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y",
+                                       "eRWC.H.o", "eRWC.HS.y", "eRWC.HS.o"),
+                          labels = c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y",
+                                       "eRWC.H.o", "eRWC.HS.y", "eRWC.HS.o"),
+                          values = c("#f7f7f7", "#fee0b6", "#d8daeb", "#f1a340",
+                                    "#998ec3", "#b35806", "#542788")) +
+        theme(axis.title.x = element_blank()) +
+        theme(axis.title.y = element_text(size = 12)) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
+        theme(axis.text.y = element_text(size = 14)) +
+        theme(panel.background = element_rect(fill = "white")) +
+        theme(panel.border = element_blank(),
+              panel.grid.major.y = element_line(color = "#C8C8C8"),
+              panel.grid.major.x = element_blank(),
+              panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) +
+        theme(legend.text = element_text(size = 12),
+              legend.title = element_text(size = 12)) +
+        theme(legend.position = "right",
+              legend.justification = "left",
+              legend.direction = "vertical") + 
+        ylab("log CFU/mL")
+```
+
+
+```{r figure_3, fig.width=12,fig.height=10}
+fig3 <- over_bp + bp3 + plot_layout(nrow= 2) + plot_annotation(tag_levels = "A") &
+            theme(plot.tag = element_text(size = 18, face = "bold"))
+fig3
+ggsave(filename = file.path(getwd(), "..", "figures", "Figure_3.jpeg"), height = 10 , width = 10);
+```
+
+
+## Testing hypotheses
+
+Same as "Data analysis: RM.H, eRM.H and eRM.HS
+
+```{r testing_hypotheses3}
+selected_samples <- c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y", "eRWC.H.o", "eRWC.HS.y", "eRWC.HS.o")
+
+subdf4 <- filter(df2, sample %in% selected_samples)
+m_vars = unique(subdf4$variable)
+
+for (x in m_vars) {
+  test_more_grps(x, subdf4)
+}
+```
