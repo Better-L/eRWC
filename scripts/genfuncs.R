@@ -123,7 +123,9 @@ get_pivot_data <- function(dataset, fp_meta) {
 
 draw_PCA <- function(data, fp_meta, title = "PCA", color_col="AdjunctCulture", xaxis_tick_label_size = 12, cpal = FALSE) {
   if (isFALSE(cpal)) {
-    cpal <- c('#b2182b', '#ef8a62', '#fe9929', '#fee391', '#d1e5f0', '#67a9cf', '#2166ac')
+    # colorblind palette
+    cpal <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499",
+              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
   }
   
   PCA_plt_data <- PCA(get_pivot_data(data, fp_meta), graph = FALSE)
@@ -144,7 +146,9 @@ draw_PCA <- function(data, fp_meta, title = "PCA", color_col="AdjunctCulture", x
 
 draw_PCA_contrib <- function(data, fp_meta, title, xaxis_tick_label_size = 12, cpal = FALSE) {
   if (isFALSE(cpal)) {
-    cpal <- c('#b2182b', '#ef8a62', '#fe9929', '#fee391', '#d1e5f0', '#67a9cf', '#2166ac')
+    # colorblind palette
+    cpal <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499",
+              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
   }
   PCA_plt_data <- PCA(get_pivot_data(data, fp_meta), graph = FALSE)
   PCA_plt <- fviz_pca_var(PCA_plt_data, 
@@ -161,13 +165,16 @@ draw_PCA_contrib <- function(data, fp_meta, title, xaxis_tick_label_size = 12, c
 }
 
 supplementary_plots <- function(data, fp_meta, title) {
+  # colorblind palette
+  cpal <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499",
+            "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
   data <- data %>%
     mutate(SubExperiment = paste("Day", substr(SubExperiment, nchar(SubExperiment), nchar(SubExperiment))))
   culture_dict <- list("None" = "control", "eRM.y " = "y", "eRM.H.y" = "y", "eRM.HS.y" = "y", "eRM.o" = "o", "eRM.H.o" = "o", "eRM.HS.o" = "o")
   data <- data %>%
     mutate(AdjunctCulture = recode_factor(AdjunctCulture, !!!culture_dict))
-  p1 <- draw_PCA(data, fp_meta, title = title, color_col = "SubExperiment", cpal = c('#b2182b','#fee391','#67a9cf','#2166ac'))
-  p2 <- draw_PCA(data, fp_meta, title = title, color_col = "AdjunctCulture", cpal = c('#b2182b','#fee391','#67a9cf','#2166ac'))
+  p1 <- draw_PCA(data, fp_meta, title = title, color_col = "SubExperiment", cpal = cpal) #c('#b2182b','#fee391','#67a9cf','#2166ac'))
+  p2 <- draw_PCA(data, fp_meta, title = title, color_col = "AdjunctCulture", cpal = cpal) #c('#b2182b','#fee391','#67a9cf','#2166ac'))
   p3 <- draw_PCA_contrib(data, fp_meta, title = paste("Variables PCA - ", title), cpal = c("#00AFBB", "#E7B800", "#FC4E07"))
   plt <- ((p1 + p2 ) / (p3 + guide_area()) ) +  plot_layout(guides = 'auto') + 
     plot_annotation(tag_levels = "A") &

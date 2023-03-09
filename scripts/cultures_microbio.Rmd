@@ -96,7 +96,7 @@ bp1 <-  ggplot(filter(df2, sample %in% c("RM", "eRM")),
         scale_fill_manual(name  = "Sample",
                           breaks = c("RM", "eRM"),
                           labels = c("RM", "eRM"),
-                          values = c("#ccece6", "#238b45")) +
+                          values = c("#88CCEE", "#CC6677")) +
         theme(axis.title.x = element_blank()) +
         theme(axis.title.y = element_text(size = 12)) +
         theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
@@ -145,7 +145,7 @@ bp2 <-  ggplot(filter(df2, sample %in% c("RM.H", "eRM.H", "eRM.HS")),
         scale_fill_manual(name  = "Sample",
                           breaks = c("RM.H", "eRM.H", "eRM.HS"),
                           labels = c("RM.H", "eRM.H", "eRM.HS"),
-                          values = c("#bfd3e6", "#8c96c6", "#88419d")) +
+                          values = c("#DDCC77", "#117733", "#332288")) +
         theme(axis.title.x = element_blank()) +
         theme(axis.title.y = element_text(size = 12)) +
         theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
@@ -173,7 +173,7 @@ over_bp <-  ggplot(filter(df2, sample %in% selected_samples),
             scale_fill_manual(name  = "Sample",
                               breaks = selected_samples,
                               labels = selected_samples,
-                              values = c("#238b45", "#ccece6", "#bfd3e6", "#8c96c6", "#88419d")) +
+                              values = c("#88CCEE", "#DDCC77", "#CC6677", "#117733", "#332288")) +
             theme(axis.title.x = element_blank()) +
             theme(axis.title.y = element_text(size = 12)) +
             theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
@@ -227,8 +227,7 @@ bp3 <-  ggplot(filter(df2, sample %in% c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y",
                                        "eRWC.H.o", "eRWC.HS.y", "eRWC.HS.o"),
                           labels = c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y",
                                        "eRWC.H.o", "eRWC.HS.y", "eRWC.HS.o"),
-                          values = c("#f7f7f7", "#fee0b6", "#d8daeb", "#f1a340",
-                                    "#998ec3", "#b35806", "#542788")) +
+                          values = c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", "#44AA99")) +
         theme(axis.title.x = element_blank()) +
         theme(axis.title.y = element_text(size = 12)) +
         theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 12)) +
