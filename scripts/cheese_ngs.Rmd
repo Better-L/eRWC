@@ -9,7 +9,7 @@ output: html_document
 ```{r cheese ngs packages, include=FALSE}
 source('genfuncs.R')
 Rdeps = c("BiocManager", "openxlsx",
-          "plyr", "tidyverse", 
+          "plyr", "tidyverse", "vegan",
           "stats", 'ggtext', 'magrittr',
           'patchwork', 'rjson')
 Biocdeps = c("phyloseq")
@@ -33,6 +33,7 @@ cheese_physeq = subset_samples(cheese_physeq, sample_ID != "K302_DNA" & sample_I
 cheese_physeq <- prune_taxa(taxa_sums(cheese_physeq) > 1, cheese_physeq)
 ```
 
+
 ```{r}
 # get relative abundance data
 cheese_physeqR <- transform_sample_counts(cheese_physeq, function(x) x/sum(x)*100 )
@@ -51,7 +52,38 @@ xaxis_tick_label_size = 12
 
 ### Distance Ordination Analysis
 
-```{r cheese ordinationPlot1}
+#### Cultures
+```{r cultures ordinationPlot1, include=FALSE}
+# bray = "Bray-Curtis dissimilarity"
+# NMDS = Non-metric Multidimensional Scaling
+# import raw sequences that were already quality filtered as described in Dreier et al 2022
+fp_culture <- file.path(getwd(), "..", "data", "cultures", "ngs", "ASV_table.xlsx")
+cult_physeq <- load_ngs_data(fp_culture)
+cult_physeqR  = transform_sample_counts(cult_physeq, function(x) x/sum(x)*100 )
+ordi = ordinate(cult_physeqR, method = "NMDS", distance = "bray")
+dnmds_plt <- plot_ordination(cult_physeqR, ordi, "sample_ID", color = "sample_type")
+# replace Na with "None" in milk_treatment factor
+NMDS_df <- dnmds_plt$data %>% replace_na(list(milk_treatment = "None"))
+# plot with all the sample_types
+cult_p_ord <- ggplot(NMDS_df,
+                 aes(NMDS1, NMDS2,
+                     color = milk_treatment,
+                     shape = sample_type)) +
+          geom_point(size = 6) +
+          scale_color_manual(values = c("H" = "#117733",
+                                        "HS" = "#332288",
+                                        "None" = "#AA4499")) +
+          labs(title = "NMDS (Bray-Curtis), milk & cultures") +
+          guides(color = guide_legend(order = 1), 
+                 shape = guide_legend(order = 2)) +
+          theme(text = element_text(size = xaxis_tick_label_size),
+                plot.title = element_text(size = title_size, hjust = 0.5, )) +
+          geom_text(mapping = aes(label = culture_type), color = 001,
+                    vjust = 0, hjust = 1.5, size = xaxis_tick_label_size/2)
+```
+
+#### Cheese
+```{r cheese ordinationPlot1, include=FALSE}
 # bray = "Bray-Curtis dissimilarity"
 # NMDS = Non-metric MultiDimentional Scaling
 ordi = ordinate(cheese_physeqR, method = "NMDS", distance = "bray")
@@ -64,9 +96,10 @@ ch_p_ord = ggplot(NMDS_df,
                       color = milk_treatment,
                       shape = culture_type)) +
                   geom_point(size = 6) +
-                  scale_color_manual(values = c("H" = '#e66101',
-                                                "HS" = '#fdb863',
-                                                "None" = '#5e3c99')) +
+                  scale_color_manual(values = c("H" = "#117733",
+                                                "HS" = "#332288",
+                                                "None" = "#AA4499",
+                                                "Control" = "#888888")) +
                   labs(title = "NMDS (Bray-Curtis), cheese 120d") +
                   guides(color = guide_legend(order = 1), 
                          shape = guide_legend(order = 2)) +
@@ -76,29 +109,50 @@ ch_p_ord = ggplot(NMDS_df,
                           vjust = 0.5, hjust = 1.75, size = xaxis_tick_label_size/2)
 ```
 
-### Diversity Plot
+```{r, fig.width=10,fig.height=10}
+fig4 <- (cult_p_ord / ch_p_ord) + plot_annotation(tag_levels = "A") &
+         theme(plot.tag = element_text(size = 18, face = "bold"))
+ggsave(filename = file.path(getwd(), "..", "figures", "Figure_4.jpeg"), height = 10 , width = 10)
+fig4   
+```
 
-```{r cheese Diversity Plot}
+
+```{r create Figure 4, fig.width=10,fig.height=5}
+p_ord <-  cult_p_ord1 + theme(legend.direction = "vertical", legend.position = "right", legend.box = "horizontal")
+fig4 <- ((p_ord / plot_spacer())) +
+         plot_layout(ncol = 2, widths = c(2, 1)) + 
+         plot_annotation(tag_levels = "A") &
+         theme(plot.tag = element_text(size = 18, face = "bold"))
+#ggsave(filename = file.path(getwd(), "..", "figures", "Figure_4.jpeg"), height = 10 , width = 10 * 2)
+fig4
+```
+
+```{r create Figure 7, fig.width=18,fig.height=10}
+p_ord <- ch_p_ord + theme(legend.direction = "vertical", legend.position = "bottom", legend.box = "horizontal")
+fig7 <- ((p_ord / plot_spacer())) +
+         plot_layout(ncol = 2, widths = c(2, 1)) + 
+         plot_annotation(tag_levels = "A") &
+         theme(plot.tag = element_text(size = 18, face = "bold"))
+ggsave(filename = file.path(getwd(), "..", "figures", "Figure_7.jpeg"), height = 10 , width = 10 * 2)
+fig7
+```
+
+### Diversity
+
+```{r cheese Diversity}
 # Diversity parameters plot----
-
-# To summarize diversity values in table
-estimate_richness(cheese_physeq)
-
-ch_p_div <- plot_richness(cheese_physeq,
-                          x = "AdjunctCulture", 
-                          color = "milk_treatment", 
-                          shape = "culture_type") +
-            geom_point(size = 3, alpha = 0.5) +
-            scale_color_manual(values = c("H" = '#e66101',
-                                          "HS" = '#fdb863',
-                                          "None" = '#5e3c99')) +
-            #scale_x_discrete(labels = x_labels) +
-            theme(text = element_text(size = xaxis_tick_label_size),
-                  plot.title = element_text(size = title_size, hjust = 0.5 ), #face = "bold"),
-                  axis.title.x = element_blank()) +
-            guides(color = guide_legend(order = 1), 
-                   shape = guide_legend(order = 2)) +
-            ggtitle("Microbial diversity - cheese 120d")
+# Summarize alpha-diversity values in table
+metadata <- as(sample_data(cheese_physeq), "data.frame")
+richness_table <- estimate_richness(cheese_physeq)
+richness_table["Adjunct culture"] <- metadata["AdjunctCulture"]
+richness_table["Production day"] <- metadata["production_day"]
+# Reorder columns
+richness_table <- richness_table[, c(10, 11, 1, 2, 3, 4, 5, 6, 7, 8 , 9)]
+richness_table
+# write to excel
+write.xlsx(richness_table, '../tables/cheese_richness_table.xlsx', colNames = TRUE, rowNames = TRUE, asTable = FALSE, keepNA = FALSE, na.string = "NaN")
+# Beta diversity Permanova
+adonis2(distance(cheese_physeq, method="bray") ~ AdjunctCulture, data = metadata, permutations = 9999)
 ```
 
 ### Relative abundances
@@ -185,9 +239,8 @@ ordered_sp_labels <- as.vector(
 ordered_sp_labels = append(ordered_sp_labels, "Other species")
 
 # Colors are set manually
-species_colors <- c(
-    '#a50026','#d73027','#f46d43','#fdae61','#fee090',
-    '#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#313695')
+species_colors <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
+                    "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
 
 # Define font size for both plots here
 yaxis_tick_label_size = 10
@@ -237,16 +290,6 @@ p4 <- draw_la_stacked_plot(df = ch_physeqR_tax_low,
                            abund_thresh = abund_thresh,
                            sp_res_th = sp_res_th
                            )
-```
-
-```{r create Figure 7, fig.width=18,fig.height=10}
-p_ord <- ch_p_ord + theme(legend.direction = "vertical", legend.position = "bottom", legend.box = "horizontal")
-fig7 <- (ch_p_div | (p_ord / plot_spacer())) +
-         plot_layout(ncol = 2, widths = c(2, 1)) + 
-         plot_annotation(tag_levels = "A") &
-         theme(plot.tag = element_text(size = 18, face = "bold"))
-ggsave(filename = file.path(getwd(), "..", "figures", "Figure_7.jpeg"), height = 10 , width = 10 * 2)
-fig7
 ```
 
 
