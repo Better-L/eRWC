@@ -1,17 +1,17 @@
 sampleID,AdjunctCulture,Age[d],Experiment,MilkTreatment,SampleNumber,SampleType,Season,Semester,SubExperiment,Trial,production_date
-EH_301_vatmilk_0h,None,0,Liebefeld,raw,301,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
-EH_302_vatmilk_0h,None,0,Liebefeld,therm.,302,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
-EH_303_vatmilk_0h,eRM.y ,0,Liebefeld,raw,303,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
-EH_304_vatmilk_0h,eRM.H.y,0,Liebefeld,raw,304,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
-EH_305_vatmilk_0h,eRM.HS.y,0,Liebefeld,raw,305,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
-EH_306_vatmilk_0h,eRM.o,0,Liebefeld,raw,306,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
-EH_307_vatmilk_0h,eRM.H.o,0,Liebefeld,raw,307,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
-EH_308_vatmilk_0h,eRM.HS.o,0,Liebefeld,raw,308,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
-EH_309_vatmilk_0h,None,0,Liebefeld,raw,309,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
-EH_310_vatmilk_0h,None,0,Liebefeld,therm.,310,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
-EH_311_vatmilk_0h,eRM.y ,0,Liebefeld,raw,311,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
-EH_312_vatmilk_0h,eRM.H.y,0,Liebefeld,raw,312,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
-EH_313_vatmilk_0h,eRM.HS.y,0,Liebefeld,raw,313,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
-EH_314_vatmilk_0h,eRM.o,0,Liebefeld,raw,314,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
-EH_315_vatmilk_0h,eRM.H.o,0,Liebefeld,raw,315,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
-EH_316_vatmilk_0h,eRM.HS.o,0,Liebefeld,raw,316,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
+EH_301_vatmilk_0h,Control,0,Liebefeld,raw,301,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
+EH_302_vatmilk_0h,Control,0,Liebefeld,therm.,302,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
+EH_303_vatmilk_0h,eRWC.y ,0,Liebefeld,raw,303,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
+EH_304_vatmilk_0h,eRWC.H.y,0,Liebefeld,raw,304,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
+EH_305_vatmilk_0h,eRWC.HS.y,0,Liebefeld,raw,305,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
+EH_306_vatmilk_0h,eRWC.o,0,Liebefeld,raw,306,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
+EH_307_vatmilk_0h,eRWC.H.o,0,Liebefeld,raw,307,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
+EH_308_vatmilk_0h,eRWC.HS.o,0,Liebefeld,raw,308,vatmilk,spring,summer,3.1,20-22-83,2022-05-04
+EH_309_vatmilk_0h,Control,0,Liebefeld,raw,309,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
+EH_310_vatmilk_0h,Control,0,Liebefeld,therm.,310,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
+EH_311_vatmilk_0h,eRWC.y ,0,Liebefeld,raw,311,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
+EH_312_vatmilk_0h,eRWC.H.y,0,Liebefeld,raw,312,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
+EH_313_vatmilk_0h,eRWC.HS.y,0,Liebefeld,raw,313,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
+EH_314_vatmilk_0h,eRWC.o,0,Liebefeld,raw,314,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
+EH_315_vatmilk_0h,eRWC.H.o,0,Liebefeld,raw,315,vatmilk,spring,summer,3.2,20-22-83,2022-05-05
+EH_316_vatmilk_0h,eRWC.HS.o,0,Liebefeld,raw,316,vatmilk,spring,summer,3.2,20-22-83,2022-05-05

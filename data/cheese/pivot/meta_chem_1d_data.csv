@@ -1,17 +1,17 @@
 sampleID,AdjunctCulture,Age[d],Experiment,MilkTreatment,SampleNumber,SampleType,Season,Semester,SubExperiment,Trial,production_date
-EH_301_cheese_24h,None,1,Liebefeld,raw,301,cheese,spring,summer,3.1,20-22-83,2022-05-04
-EH_302_cheese_24h,None,1,Liebefeld,therm.,302,cheese,spring,summer,3.1,20-22-83,2022-05-04
-EH_303_cheese_24h,eRM.y ,1,Liebefeld,raw,303,cheese,spring,summer,3.1,20-22-83,2022-05-04
-EH_304_cheese_24h,eRM.H.y,1,Liebefeld,raw,304,cheese,spring,summer,3.1,20-22-83,2022-05-04
-EH_305_cheese_24h,eRM.HS.y,1,Liebefeld,raw,305,cheese,spring,summer,3.1,20-22-83,2022-05-04
-EH_306_cheese_24h,eRM.o,1,Liebefeld,raw,306,cheese,spring,summer,3.1,20-22-83,2022-05-04
-EH_307_cheese_24h,eRM.H.o,1,Liebefeld,raw,307,cheese,spring,summer,3.1,20-22-83,2022-05-04
-EH_308_cheese_24h,eRM.HS.o,1,Liebefeld,raw,308,cheese,spring,summer,3.1,20-22-83,2022-05-04
-EH_309_cheese_24h,None,1,Liebefeld,raw,309,cheese,spring,summer,3.2,20-22-83,2022-05-05
-EH_310_cheese_24h,None,1,Liebefeld,therm.,310,cheese,spring,summer,3.2,20-22-83,2022-05-05
-EH_311_cheese_24h,eRM.y ,1,Liebefeld,raw,311,cheese,spring,summer,3.2,20-22-83,2022-05-05
-EH_312_cheese_24h,eRM.H.y,1,Liebefeld,raw,312,cheese,spring,summer,3.2,20-22-83,2022-05-05
-EH_313_cheese_24h,eRM.HS.y,1,Liebefeld,raw,313,cheese,spring,summer,3.2,20-22-83,2022-05-05
-EH_314_cheese_24h,eRM.o,1,Liebefeld,raw,314,cheese,spring,summer,3.2,20-22-83,2022-05-05
-EH_315_cheese_24h,eRM.H.o,1,Liebefeld,raw,315,cheese,spring,summer,3.2,20-22-83,2022-05-05
-EH_316_cheese_24h,eRM.HS.o,1,Liebefeld,raw,316,cheese,spring,summer,3.2,20-22-83,2022-05-05
+EH_301_cheese_24h,Control,1,Liebefeld,raw,301,cheese,spring,summer,3.1,20-22-83,2022-05-04
+EH_302_cheese_24h,Control,1,Liebefeld,therm.,302,cheese,spring,summer,3.1,20-22-83,2022-05-04
+EH_303_cheese_24h,eRWC.y ,1,Liebefeld,raw,303,cheese,spring,summer,3.1,20-22-83,2022-05-04
+EH_304_cheese_24h,eRWC.H.y,1,Liebefeld,raw,304,cheese,spring,summer,3.1,20-22-83,2022-05-04
+EH_305_cheese_24h,eRWC.HS.y,1,Liebefeld,raw,305,cheese,spring,summer,3.1,20-22-83,2022-05-04
+EH_306_cheese_24h,eRWC.o,1,Liebefeld,raw,306,cheese,spring,summer,3.1,20-22-83,2022-05-04
+EH_307_cheese_24h,eRWC.H.o,1,Liebefeld,raw,307,cheese,spring,summer,3.1,20-22-83,2022-05-04
+EH_308_cheese_24h,eRWC.HS.o,1,Liebefeld,raw,308,cheese,spring,summer,3.1,20-22-83,2022-05-04
+EH_309_cheese_24h,Control,1,Liebefeld,raw,309,cheese,spring,summer,3.2,20-22-83,2022-05-05
+EH_310_cheese_24h,Control,1,Liebefeld,therm.,310,cheese,spring,summer,3.2,20-22-83,2022-05-05
+EH_311_cheese_24h,eRWC.y ,1,Liebefeld,raw,311,cheese,spring,summer,3.2,20-22-83,2022-05-05
+EH_312_cheese_24h,eRWC.H.y,1,Liebefeld,raw,312,cheese,spring,summer,3.2,20-22-83,2022-05-05
+EH_313_cheese_24h,eRWC.HS.y,1,Liebefeld,raw,313,cheese,spring,summer,3.2,20-22-83,2022-05-05
+EH_314_cheese_24h,eRWC.o,1,Liebefeld,raw,314,cheese,spring,summer,3.2,20-22-83,2022-05-05
+EH_315_cheese_24h,eRWC.H.o,1,Liebefeld,raw,315,cheese,spring,summer,3.2,20-22-83,2022-05-05
+EH_316_cheese_24h,eRWC.HS.o,1,Liebefeld,raw,316,cheese,spring,summer,3.2,20-22-83,2022-05-05
