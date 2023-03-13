@@ -209,33 +209,14 @@ ch_physeqR_tax_low[ch_physeqR_tax_low$Species %in% ch_remainder,]$Species <- 'Ot
 ```
 
 ```{r cheese stacked species abundance plots}
-# vector to order the data frame, to make "other species" the last element of the legend
-unique_sp <- unique(ch_physeqR_tax_low$Species)
-unique_sp <- unique_sp[unique_sp != "Other species"]
-ordered_species = append(unique_sp, "Other species")
+# create nicely formatted guides with the species names
+ordered_species_list <- ordered_species_guides(ch_physeqR_tax_low$Species, "Other species")
+ordered_species <- ordered_species_list[[1]]
+ordered_sp_labels <- ordered_species_list[[2]]
 
-# use labels for element_markdown to use italics for species names (but not for "Other species")
-ordered_sp_labels <- as.vector(
-  sapply(
-    unique_sp,
-    FUN = function(X) if (grepl(" sp.", X)) paste0("*", strsplit(X, " sp."), "* sp.") else paste0("*", X, "*")
-    )
-  )
-ordered_sp_labels = append(ordered_sp_labels, "Other species")
-
-# vector to order the data frame, to make "lower than avg. abundance" the last element of the legend
-ha_unique_sp <- unique(ch_physeqR_tax_high$Species)
-ha_unique_sp <- ha_unique_sp[ha_unique_sp != lowabund_str]
-ha_ordered_species = append(ha_unique_sp, lowabund_str)
-
-# use labels for element_markdown to use italics for species names (but not for "Other species")
-ha_ordered_sp_labels <- as.vector(
-  sapply(
-    ha_unique_sp,
-    FUN = function(X) if (grepl(" sp.", X)) paste0("*", strsplit(X, " sp."), "* sp.") else paste0("*", X, "*")
-    )
-  )
-ha_ordered_sp_labels = append(ha_ordered_sp_labels, lowabund_str)
+ha_ordered_species_list <- ordered_species_guides(ch_physeqR_tax_high$Species, lowabund_str)
+ha_ordered_species <- ha_ordered_species_list[[1]]
+ha_ordered_sp_labels <- ha_ordered_species_list[[2]]
 
 # Colors are set manually
 species_colors <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
@@ -272,10 +253,10 @@ p3 <- draw_ha_stacked_plot(df = ch_physeqR_tax_high_full,
                            df_sorter = df_sorter,
                            wrap_group = c("~SubExperiment"),
                            Xaxis_rot = 45,
-                           ordered_sp_labels=ha_ordered_sp_labels,
+                           ordered_sp_labels = ha_ordered_sp_labels,
                            abund_thresh = abund_thresh,
                            sp_res_th = sp_res_th,
-                           ordered_species=ha_ordered_species
+                           ordered_species = ha_ordered_species
                            )
 
 # Low abundant species plot

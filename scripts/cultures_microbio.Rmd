@@ -228,7 +228,7 @@ Since here there are more then 2 groups, a one-way ANOVA model was needed for th
 
 ```{r testing_hypotheses4}
 subdf5 <- filter(df2, sample %in% c("RM.H", "eRM.H", "eRM.HS"))
-m_vars = unique(subdf3$variable)
+m_vars = unique(subdf5$variable)
 
 for (x in m_vars) {
   test_more_grps(x, subdf5)
@@ -297,3 +297,4 @@ for (x in m_vars) {
   test_more_grps(x, subdf6)
 }
 ```
+

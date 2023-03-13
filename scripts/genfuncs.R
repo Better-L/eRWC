@@ -230,6 +230,30 @@ draw_ha_stacked_plot <- function(df, sampleid_vector,
   return(ha_Plot)
 }
 
+ordered_species_guides <- function(specieslist, thresh_str) {
+  # vector to order the data frame, to make "other species" the last element of the legend
+  unique_sp <- unique(specieslist)
+  unique_sp <- unique_sp[unique_sp != thresh_str]
+  ordered_species = append(unique_sp, thresh_str)
+  # use labels for element_markdown to use italics for species names (but not for "Other species")
+  ordered_sp_labels <- as.vector(
+    sapply(
+      unique_sp,
+      FUN = function(X) if (grepl(" sp.", X)) paste0("*", strsplit(X, " sp."), "* sp.") else paste0("*", X, "*")
+    )
+  )
+  # handle subspecies names
+  ordered_sp_labels <- as.vector(
+    sapply(
+      ordered_sp_labels,
+      FUN = function(X) if (grepl(" subsp.", X)) paste0(unlist(strsplit(X, " subsp. "))[1] , "* subsp. *", unlist(strsplit(X, " subsp. "))[-1]) else X
+    )
+  )
+  ordered_sp_labels = append(ordered_sp_labels, thresh_str)
+  
+  return(list(ordered_species, ordered_sp_labels))
+}
+
 draw_la_stacked_plot <- function(df, sampleid_vector, 
                                  abund_thresh = 1.0, sp_res_th = 0.6,
                                  x_labels, yaxis_tick_label_size = 10,

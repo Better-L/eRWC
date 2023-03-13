@@ -150,33 +150,14 @@ cult_physeqR_tax_low[cult_physeqR_tax_low$Species %in% remainder,]$Species <- 'O
 
 
 ```{r}
-# vector to order the data frame, to make "other species" the last element of the legend in the low abundant species plot
-unique_sp <- unique(cult_physeqR_tax_low$Species)
-unique_sp <- unique_sp[unique_sp != "Other species"]
-ordered_species = append(unique_sp, "Other species")
+# create nicely formatted guides with the species names
+ordered_species_list <- ordered_species_guides(cult_physeqR_tax_low$Species, "Other species")
+ordered_species <- ordered_species_list[[1]]
+ordered_sp_labels <- ordered_species_list[[2]]
 
-# use labels for element_markdown to use italics for species names (but not for "Other species")
-ordered_sp_labels <- as.vector(
-  sapply(
-    unique_sp,
-    FUN = function(X) if (grepl(" sp.", X)) paste0("*", strsplit(X, " sp."), "* sp.") else paste0("*", X, "*")
-    )
-  )
-ordered_sp_labels = append(ordered_sp_labels, "Other species")
-
-# vector to order the data frame, to make "lower than avg. abundance" the last element of the legend
-ha_unique_sp <- unique(cult_physeqR_tax_high$Species)
-ha_unique_sp <- ha_unique_sp[ha_unique_sp != lowabund_str]
-ha_ordered_species = append(ha_unique_sp, lowabund_str)
-
-# use labels for element_markdown to use italics for species names (but not for "Other species")
-ha_ordered_sp_labels <- as.vector(
-  sapply(
-    ha_unique_sp,
-    FUN = function(X) if (grepl(" sp.", X)) paste0("*", strsplit(X, " sp."), "* sp.") else paste0("*", X, "*")
-    )
-  )
-ha_ordered_sp_labels = append(ha_ordered_sp_labels, lowabund_str)
+ha_ordered_species_list <- ordered_species_guides(cult_physeqR_tax_high$Species, lowabund_str)
+ha_ordered_species <- ha_ordered_species_list[[1]]
+ha_ordered_sp_labels <- ha_ordered_species_list[[2]]
 
 # sample_ID levels
 sampleid_vector <- c("NWC.2", "NWC.3", "NWC.4",
