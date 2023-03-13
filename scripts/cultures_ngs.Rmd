@@ -74,6 +74,30 @@ c_metadata <- as(sample_data(cultures_only_phy), "data.frame")
 adonis2(distance(cultures_only_phy, method="bray") ~ sample_subtype, data = c_metadata, permutations = 9999)
 ```
 
+### Diversity plot
+```{r cultures diversity plot, echo=FALSE, fig.height=10, fig.width=12}
+# Diversity parameters plot----
+# from phyloseq  https://joey711.github.io/phyloseq/plot_richness-examples.html
+# it require the dataset with counts, not rel. ab.
+physeq_div <- prune_taxa(taxa_sums(cult_physeq) > 1, cult_physeq) # just in case the initial database should not have taxa with count=0
+# replace Na with "None"
+physeq_div@sam_data <- physeq_div@sam_data %>% replace_na(list(milk_treatment = "None",
+                                        culture_type = "None"))
+
+p_div <-  plot_richness(physeq_div, x = "sample_type", color = "milk_treatment", shape = "culture_type") +
+          geom_point(size = 3, alpha = 0.5) +
+          scale_color_manual(values = c("H" = "#117733",
+                                          "HS" = "#332288",
+                                          "None" = "#AA4499")) +
+          theme(text = element_text(size = xaxis_tick_label_size),
+                plot.title = element_text(size = title_size, hjust = 0.5 ),
+                axis.title.x = element_blank()) +
+          guides(color = guide_legend(order = 1), 
+                 shape = guide_legend(order = 2)) +
+          ggtitle("Microbial diversity - milk & cultures")
+p_div
+```
+
 ### Relative abundances
 
 ```{r cultures data preparation for plotting}
@@ -211,7 +235,7 @@ p2 <- draw_la_stacked_plot(df = cult_physeqR_tax_low,
 
 
 
-```{r create Figure 4, fig.width=12,fig.height=10}
+```{r create Figure 4, echo=FALSE, fig.height=10, fig.width=12}
 fig4 <- (p1 / p2) + 
               plot_annotation(tag_levels = "A") &
               theme(plot.tag = element_text(size = 18, face = "bold"))

@@ -107,30 +107,30 @@ chem_120d_data <- chem_120d[,c(1, meta_len:length(chem_120d))]
 dataset_120d <- merge(micro_120d, chem_120d_data, by = "sampleID")
 ```
 
-```{r PCA vat milk}
+```{r PCA vat milk, include=FALSE}
 p1 <- draw_PCA(micro_0d, meta_0d_fp, title = "Vat milk")
 ```
 
-```{r PCA cheese 1d}
+```{r PCA cheese 1d, include=FALSE}
 p2 <- draw_PCA(dataset_1d, meta_1d_fp, title = "Cheese 1d")
 ```
 
-```{r PCA cheese 60d}
+```{r PCA cheese 60d, include=FALSE}
 p3 <- draw_PCA(micro_60d, meta_60d_fp, title = "Cheese 60d")
 ```
 
-```{r PCA cheese 120d}
+```{r PCA cheese 120d, include=FALSE}
 p4 <- draw_PCA(dataset_120d, meta_120d_fp, title = "Cheese 120d")
 ```
 
-```{r create Figure 5, fig.width=12,fig.height=10}
+```{r create Figure 5, echo=FALSE, fig.height=10, fig.width=12}
 fig5 <- (p1 + p2 + p3 + p4) + 
          plot_layout(guides = 'collect') + 
          plot_annotation(tag_levels = "A") &
          theme(plot.tag = element_text(size = 18, face = "bold"))
 ```
 
-```{r, fig.width=12,fig.height=10}
+```{r echo=FALSE, fig.height=10, fig.width=12}
 
 p_ranges_x <- c(ggplot_build(fig5[[1]])$layout$panel_scales_x[[1]]$range$range,
                 ggplot_build(fig5[[2]])$layout$panel_scales_x[[1]]$range$range,
@@ -154,25 +154,25 @@ ggsave(filename = file.path(getwd(), "..", "figures", "Figure_5.jpeg"), height =
 
 ### Supplementary Plots
 
-```{r, fig.width=12,fig.height=10}
+```{r echo=FALSE, fig.height=10, fig.width=12}
 sf2 <- supplementary_plots(micro_0d, meta_0d_fp, title = "Vat milk")
 ggsave(filename = file.path(getwd(), "..", "figures", "Supplementary_Figure_2.jpeg"), height = 10 , width = 10*1.2)
 sf2
 ```
 
-```{r, fig.width=12,fig.height=10}
+```{r echo=FALSE, fig.height=10, fig.width=12}
 sf4 <- supplementary_plots(dataset_1d, meta_1d_fp, title = "Cheese 1d")
 ggsave(filename = file.path(getwd(), "..", "figures", "Supplementary_Figure_4.jpeg"), height = 10 , width = 10*1.2)
 sf4
 ```
 
-```{r, fig.width=12,fig.height=10}
+```{r echo=FALSE, fig.height=10, fig.width=12}
 sf3 <- supplementary_plots(micro_60d, meta_60d_fp, title = "Cheese 60d")
 ggsave(filename = file.path(getwd(), "..", "figures", "Supplementary_Figure_3.jpeg"), height = 10 , width = 10*1.2)
 sf3
 ```
 
-```{r, fig.width=12,fig.height=10}
+```{r echo=FALSE, fig.height=10, fig.width=12}
 sf5 <- supplementary_plots(dataset_120d, meta_120d_fp, title = "Cheese 120d")
 ggsave(filename = file.path(getwd(), "..", "figures", "Supplementary_Figure_5.jpeg"), height = 10 , width = 10*1.2)
 sf5

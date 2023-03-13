@@ -11,6 +11,18 @@ checkBiocpackages <- function(x){
   }
 }
 
+# a function derived from "R in action" book
+mystats <- function(x, na.omit=TRUE){
+  if (na.omit)
+    x <- x[!is.na(x)]
+  n <- round(length(x), digits = 1)
+  mx <- round(max(x), digits = 1)
+  mn <- round(min(x), digits = 1)
+  m <- round(mean(x), digits = 1)
+  s <- round(sd(x), digits = 1)
+  return(c(n = n, mean = m, stdev = s, max = mx, min = mn))
+}
+
 test_two_grps <- function(i, df, sample_names){
   desc_str <- paste(i, sample_names[1], sample_names[2])
   message(strrep("-", 80))

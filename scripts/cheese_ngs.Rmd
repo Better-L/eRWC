@@ -52,7 +52,7 @@ xaxis_tick_label_size = 12
 ### Distance Ordination Analysis
 
 #### Cultures
-```{r cultures ordinationPlot1, include=FALSE}
+```{r cultures ordinationPlot1}
 # bray = "Bray-Curtis dissimilarity"
 # NMDS = Non-metric Multidimensional Scaling
 # import raw sequences that were already quality filtered as described in Dreier et al 2022
@@ -82,7 +82,7 @@ cult_p_ord <- ggplot(NMDS_df,
 ```
 
 #### Cheese
-```{r cheese ordinationPlot1, include=FALSE}
+```{r cheese ordinationPlot1}
 # bray = "Bray-Curtis dissimilarity"
 # NMDS = Non-metric MultiDimentional Scaling
 ordi = ordinate(cheese_physeqR, method = "NMDS", distance = "bray")
@@ -108,7 +108,7 @@ ch_p_ord = ggplot(NMDS_df,
                           vjust = 0.5, hjust = 1.75, size = xaxis_tick_label_size/2)
 ```
 
-```{r, fig.width=10,fig.height=10}
+```{r echo=FALSE, fig.height=10, fig.width=10}
 fig3 <- (cult_p_ord / ch_p_ord) + plot_annotation(tag_levels = "A") &
          theme(plot.tag = element_text(size = 18, face = "bold"))
 ggsave(filename = file.path(getwd(), "..", "figures", "Figure_3.jpeg"), height = 10 , width = 10)
@@ -129,9 +129,33 @@ richness_table <- richness_table[, c(10, 11, 1, 2, 3, 4, 5, 6, 7, 8 , 9)]
 richness_table
 # write to excel
 write.xlsx(richness_table, '../tables/cheese_richness_table.xlsx', colNames = TRUE, rowNames = TRUE, asTable = FALSE, keepNA = FALSE, na.string = "NaN")
+
 # Beta diversity Permanova
 adonis2(distance(cheese_physeq, method="bray") ~ AdjunctCulture, data = metadata, permutations = 9999)
 ```
+
+
+### Diversity plot
+```{r cheese Diversity plot, echo=FALSE, fig.height=10, fig.width=12}
+# alpha diversity plot
+ch_p_div <- plot_richness(cheese_physeq,
+                          x = "AdjunctCulture", 
+                          color = "milk_treatment", 
+                          shape = "culture_type") +
+            geom_point(size = 3, alpha = 0.5) +
+            scale_color_manual(values = c("H" = "#117733",
+                                          "HS" = "#332288",
+                                          "None" = "#AA4499")) +
+            #scale_x_discrete(labels = x_labels) +
+            theme(text = element_text(size = xaxis_tick_label_size),
+                  plot.title = element_text(size = title_size, hjust = 0.5 ), #face = "bold"),
+                  axis.title.x = element_blank()) +
+            guides(color = guide_legend(order = 1), 
+                   shape = guide_legend(order = 2)) +
+            ggtitle("Microbial diversity - cheese 120d")
+ch_p_div
+```
+
 
 ### Relative abundances
 
@@ -275,7 +299,7 @@ p4 <- draw_la_stacked_plot(df = ch_physeqR_tax_low,
 ```
 
 
-```{r create Figure 8, fig.width=12,fig.height=10}
+```{r create Figure 8, echo=FALSE, fig.height=10, fig.width=12}
 fig6 <- (p3 / p4) +
               plot_annotation(tag_levels = "A") &
               theme(plot.tag = element_text(size = 18, face = "bold"))

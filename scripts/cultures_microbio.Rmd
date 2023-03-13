@@ -58,23 +58,10 @@ We analyzed 12 samples:
 Here is a summary statistic of the results divided for each sample:
 
 ```{r summary statistics}
-# a function derived from "R in action" book
-mystats <- function(x, na.omit=TRUE){
-  if (na.omit)
-    x <- x[!is.na(x)]
-  n <- round(length(x), digits = 1)
-  mx <- round(max(x), digits = 1)
-  mn <- round(min(x), digits = 1)
-  m <- round(mean(x), digits = 1)
-  s <- round(sd(x), digits = 1)
-  return(c(n = n, mean = m, stdev = s, max = mx, min = mn))
-}
-
 dstats <- function(x)sapply(x, mystats)
 dfstats <- by(df[2:9],
               list(sample = df$sample), dstats)
 dfstats
-
 ```
 
 ## Data analysis: RM and eRM
@@ -83,9 +70,14 @@ dfstats
 
 This boxplot shows the spontaneous fermentation effect of RM on the concentration of different microbial groups.
 
-```{r boxplot1, dpi=150}
+```{r}
 # for boxplots, the dataset in melted form is preferred
 df2 <- melt(df, id = "sample", value.name = "CFU_mL")
+```
+
+
+```{r boxplot1, echo=FALSE, dpi=150}
+
 
 bp1 <-  ggplot(filter(df2, sample %in% c("RM", "eRM")),
                    aes(x = variable,
@@ -163,7 +155,7 @@ for (x in m_vars) {
 
 Here is shown the microbial enrichment of RM.H, also with addition of salt.
 
-```{r boxplot2, dpi=150}
+```{r boxplot2, echo=FALSE, dpi=150}
 bp2 <-  ggplot(filter(df2, sample %in% c("RM.H", "eRM.H", "eRM.HS")),
                aes(x = variable,
                y = CFU_mL,
@@ -189,7 +181,8 @@ bp2 <-  ggplot(filter(df2, sample %in% c("RM.H", "eRM.H", "eRM.HS")),
         ylab("log CFU/mL")
 bp2
 ```
-```{r overview boxplot, dpi=150}
+
+```{r overview boxplot, dpi=150, include=FALSE}
 selected_samples = c("RM", "RM.H", "eRM", "eRM.H", "eRM.HS")
 
 over_bp <-  ggplot(filter(df2, sample %in% selected_samples),
@@ -218,7 +211,6 @@ over_bp <-  ggplot(filter(df2, sample %in% selected_samples),
                   legend.justification = "left",
                   legend.direction = "vertical") + 
             ylab("log CFU/mL")
-over_bp
 ```
 
 
@@ -242,7 +234,7 @@ for (x in m_vars) {
 
 This boxplot shows the microbial composition of the final cultures, obtained by incubating the mixture of NWC and the enriched milks.
 
-```{r boxplot3, dpi=150}
+```{r boxplot3, dpi=150, include=FALSE}
 bp3 <-  ggplot(filter(df2, sample %in% c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y",
                                         "eRWC.H.o", "eRWC.HS.y", "eRWC.HS.o")),
                    aes(x = variable, 
@@ -275,7 +267,7 @@ bp3 <-  ggplot(filter(df2, sample %in% c("NWC", "eRWC.y", "eRWC.o", "eRWC.H.y",
 ```
 
 
-```{r summary figure, fig.width=12,fig.height=10}
+```{r summary figure, echo=FALSE, fig.height=10, fig.width=12}
 summary_fig <- over_bp + bp3 + plot_layout(nrow= 2) + plot_annotation(tag_levels = "A") &
             theme(plot.tag = element_text(size = 18, face = "bold"))
 summary_fig
@@ -283,7 +275,7 @@ summary_fig
 ```
 
 
-## Testing hypotheses
+### Testing hypotheses
 
 Since here there are more then 2 groups, a one-way ANOVA model was needed for the statistical analysis. The variance homogeneity was previously checked using the Bartlett's test. In case the assumptions of one-way ANOVA test are not met, a Kruskal-Wallis test is applied. A Multiple Mean Comparison test was eventually performed afterwards.
 
