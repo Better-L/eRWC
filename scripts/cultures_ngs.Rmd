@@ -9,7 +9,7 @@ output: html_document
 ```{r ngs packages, include=FALSE}
 source('genfuncs.R')
 Rdeps = c("BiocManager", "openxlsx",
-          "plyr", "tidyverse", 
+          "plyr", "tidyverse", "vegan",
           "stats", 'ggtext', 'magrittr',
           'patchwork', 'rjson')
 Biocdeps = c("phyloseq")
@@ -129,6 +129,12 @@ low_ab_sp <- means[means$mean < abund_thresh, "Species"]
 cult_physeqR_tax_high <- cult_physeqR_tax_samples[cult_physeqR_tax_samples$Species %in% high_ab_sp,]
 cult_physeqR_tax_low <- cult_physeqR_tax_samples[cult_physeqR_tax_samples$Species %in% low_ab_sp,]
 
+low_abund <- cult_physeqR_tax_low
+lowabund_str <- paste(c("<", abund_thresh, "% avg. abundance"), collapse = " ")
+low_abund$Species <- lowabund_str
+cult_physeqR_tax_high_full <- rbind(cult_physeqR_tax_high, low_abund)
+
+
 # convert Species to a character vector from a factor because R
 cult_physeqR_tax_low$Species <- as.character(cult_physeqR_tax_low$Species)
 
@@ -158,6 +164,20 @@ ordered_sp_labels <- as.vector(
   )
 ordered_sp_labels = append(ordered_sp_labels, "Other species")
 
+# vector to order the data frame, to make "lower than avg. abundance" the last element of the legend
+ha_unique_sp <- unique(cult_physeqR_tax_high$Species)
+ha_unique_sp <- ha_unique_sp[ha_unique_sp != lowabund_str]
+ha_ordered_species = append(ha_unique_sp, lowabund_str)
+
+# use labels for element_markdown to use italics for species names (but not for "Other species")
+ha_ordered_sp_labels <- as.vector(
+  sapply(
+    ha_unique_sp,
+    FUN = function(X) if (grepl(" sp.", X)) paste0("*", strsplit(X, " sp."), "* sp.") else paste0("*", X, "*")
+    )
+  )
+ha_ordered_sp_labels = append(ha_ordered_sp_labels, lowabund_str)
+
 # sample_ID levels
 sampleid_vector <- c("NWC.2", "NWC.3", "NWC.4",
                      "eRWC.y.2", "eRWC.y.3", "eRWC.y.4",
@@ -180,15 +200,17 @@ df_sorter = c("Species", "sample_subtype")
 x_labels = c(".1",".2",".3")
 
 # High abundant species plot
-p1 <- draw_ha_stacked_plot(df = cult_physeqR_tax_high,
+p1 <- draw_ha_stacked_plot(df = cult_physeqR_tax_high_full,
                            sampleid_vector = sampleid_vector,
                            x_factor = "sample_ID",
                            x_labels = x_labels,
                            species_colors = species_colors, 
                            df_sorter = df_sorter,
                            wrap_group = c("~sample_subtype"),
+                           ordered_sp_labels = ha_ordered_sp_labels,
                            abund_thresh = abund_thresh,
-                           sp_res_th = sp_res_th
+                           sp_res_th = sp_res_th,
+                           ordered_species = ha_ordered_species
                            )
 
 # Low abundant species plot
@@ -206,22 +228,13 @@ p2 <- draw_la_stacked_plot(df = cult_physeqR_tax_low,
 ```
 
 
-```{r create Figure 4, fig.width=10,fig.height=5}
-p_ord <-  p_ord1 + theme(legend.direction = "vertical", legend.position = "right", legend.box = "horizontal")
-fig4 <- ((p_ord / plot_spacer())) +
-         plot_layout(ncol = 2, widths = c(2, 1)) + 
-         plot_annotation(tag_levels = "A") &
-         theme(plot.tag = element_text(size = 18, face = "bold"))
-#ggsave(filename = file.path(getwd(), "..", "figures", "Figure_4.jpeg"), height = 10 , width = 10 * 2)
-fig4
-```
 
 
-```{r create Figure 5, fig.width=12,fig.height=10}
-fig5 <- (p1 / p2) + 
+```{r create Figure 4, fig.width=12,fig.height=10}
+fig4 <- (p1 / p2) + 
               plot_annotation(tag_levels = "A") &
               theme(plot.tag = element_text(size = 18, face = "bold"))
                   
-ggsave(filename = file.path(getwd(), "..", "figures", "Figure_5.jpeg"), height = 10 , width = 10 * 1.2)
-fig5
+ggsave(filename = file.path(getwd(), "..", "figures", "Figure_4.jpeg"), height = 10 , width = 10 * 1.2)
+fig4
 ```

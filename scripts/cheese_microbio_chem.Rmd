@@ -123,8 +123,8 @@ p3 <- draw_PCA(micro_60d, meta_60d_fp, title = "Cheese 60d")
 p4 <- draw_PCA(dataset_120d, meta_120d_fp, title = "Cheese 120d")
 ```
 
-```{r create Figure 6, fig.width=12,fig.height=10}
-fig6 <- (p1 + p2 + p3 + p4) + 
+```{r create Figure 5, fig.width=12,fig.height=10}
+fig5 <- (p1 + p2 + p3 + p4) + 
          plot_layout(guides = 'collect') + 
          plot_annotation(tag_levels = "A") &
          theme(plot.tag = element_text(size = 18, face = "bold"))
@@ -132,24 +132,24 @@ fig6 <- (p1 + p2 + p3 + p4) +
 
 ```{r, fig.width=12,fig.height=10}
 
-p_ranges_x <- c(ggplot_build(fig6[[1]])$layout$panel_scales_x[[1]]$range$range,
-                ggplot_build(fig6[[2]])$layout$panel_scales_x[[1]]$range$range,
-                ggplot_build(fig6[[3]])$layout$panel_scales_x[[1]]$range$range,
-                ggplot_build(fig6[[4]])$layout$panel_scales_x[[1]]$range$range
+p_ranges_x <- c(ggplot_build(fig5[[1]])$layout$panel_scales_x[[1]]$range$range,
+                ggplot_build(fig5[[2]])$layout$panel_scales_x[[1]]$range$range,
+                ggplot_build(fig5[[3]])$layout$panel_scales_x[[1]]$range$range,
+                ggplot_build(fig5[[4]])$layout$panel_scales_x[[1]]$range$range
                 )
 
-p_ranges_y <- c(ggplot_build(fig6[[1]])$layout$panel_scales_y[[1]]$range$range,
-                ggplot_build(fig6[[2]])$layout$panel_scales_y[[1]]$range$range,
-                ggplot_build(fig6[[3]])$layout$panel_scales_y[[1]]$range$range,
-                ggplot_build(fig6[[4]])$layout$panel_scales_y[[1]]$range$range
+p_ranges_y <- c(ggplot_build(fig5[[1]])$layout$panel_scales_y[[1]]$range$range,
+                ggplot_build(fig5[[2]])$layout$panel_scales_y[[1]]$range$range,
+                ggplot_build(fig5[[3]])$layout$panel_scales_y[[1]]$range$range,
+                ggplot_build(fig5[[4]])$layout$panel_scales_y[[1]]$range$range
                 )
 
 # use the same x and y axis limits for all plots
-fig6 & 
+fig5 & 
   xlim(min(p_ranges_x), max(p_ranges_x)) & 
   ylim(min(p_ranges_y), max(p_ranges_y))
 
-ggsave(filename = file.path(getwd(), "..", "figures", "Figure_6.jpeg"), height = 10 , width = 10*1.2)
+ggsave(filename = file.path(getwd(), "..", "figures", "Figure_5.jpeg"), height = 10 , width = 10*1.2)
 ```
 
 ### Supplementary Plots
