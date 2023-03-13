@@ -11,22 +11,22 @@ checkBiocpackages <- function(x){
   }
 }
 
-test_two_grps <- function(i, df){
+test_two_grps <- function(i, df, sample_names){
+  desc_str <- paste(i, sample_names[1], sample_names[2])
   message(strrep("-", 80))
   message(i, appendLF = TRUE)
   eq_var = FALSE
   data <- filter(df, variable == i)
-  f_var <-  with(data, var.test(CFU_mL[sample == "RM"], CFU_mL[sample == "eRM"]))
-  f_var$data.name <- paste(i, "RM eRM")
+  f_var <-  with(data, var.test(CFU_mL[sample == sample_names[1]], CFU_mL[sample == sample_names[2]]))
+  f_var$data.name <- desc_str
   print(f_var)
   message(strrep(" ", 5), strrep("-",66))
   if (f_var$p.value >= 0.05) {
     eq_var = TRUE
   }
-  t_var <-  with(data, t.test(CFU_mL[sample == "RM"], CFU_mL[sample == "eRM"], var.equal = eq_var))
-  t_var$data.name <- paste(i, "RM eRM")
+  t_var <-  with(data, t.test(CFU_mL[sample == sample_names[1]], CFU_mL[sample == sample_names[2]], var.equal = eq_var))
+  t_var$data.name <- desc_str
   print(t_var)
-  
 }
 
 test_more_grps <- function(i, df){
@@ -170,7 +170,7 @@ supplementary_plots <- function(data, fp_meta, title) {
             "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
   data <- data %>%
     mutate(SubExperiment = paste("Day", substr(SubExperiment, nchar(SubExperiment), nchar(SubExperiment))))
-  culture_dict <- list("None" = "control", "eRM.y " = "y", "eRM.H.y" = "y", "eRM.HS.y" = "y", "eRM.o" = "o", "eRM.H.o" = "o", "eRM.HS.o" = "o")
+  culture_dict <- list("None" = "control", "# remove e in eRWCeRM.y " = "y", "eRM.H.y" = "y", "eRM.HS.y" = "y", "eRM.o" = "o", "eRM.H.o" = "o", "eRM.HS.o" = "o")
   data <- data %>%
     mutate(AdjunctCulture = recode_factor(AdjunctCulture, !!!culture_dict))
   p1 <- draw_PCA(data, fp_meta, title = title, color_col = "SubExperiment", cpal = cpal) #c('#b2182b','#fee391','#67a9cf','#2166ac'))
@@ -186,17 +186,19 @@ draw_ha_stacked_plot <- function(df, sampleid_vector,
                                  abund_thresh = 1.0, sp_res_th = 0.6,
                                  x_labels, yaxis_tick_label_size = 10,
                                  yaxis_label_size = 10, xaxis_tick_label_size = 12,
-                                 Xaxis_rot = 0, df_sorter, species_colors, wrap_group, x_factor) {
+                                 Xaxis_rot = 0, ordered_sp_labels,
+                                 df_sorter, species_colors, wrap_group, x_factor,
+                                 ordered_species) {
   
   plt_title <- paste(c("≥", abund_thresh, "% average abundance"), collapse = " ")
-  ha_Plot <- ggplot(arrange(df, !!!df_sorter),
+  ha_Plot <- ggplot(arrange(df, !!!df_sorter) %>%
+                      mutate(Species = factor(Species, levels = rev(ordered_species))),
                     aes(x = factor(df[[x_factor]], levels = sampleid_vector),
                         y = Abundance, fill = Species)) + 
     geom_bar(stat = "identity", position = position_stack(reverse = TRUE)) +
-    scale_fill_manual(values = species_colors) +
-    scale_y_continuous(breaks = seq(0, 100, by = 10),
-                       expand = expansion(mult = c(0, .01)),
-                       limits = c(0, 100)) +
+    scale_fill_manual(values = c("black", species_colors[1:length(unique(df$Species)) - 1]), 
+                      labels = rev(ordered_sp_labels)) +
+    scale_y_continuous(breaks = seq(0, 100, by = 10.0), expand = expansion(mult = c(0, .01))) +
     scale_x_discrete(labels = x_labels) + 
     theme(axis.title.x = element_blank()) + 
     theme(axis.text.x = element_text(angle = Xaxis_rot, hjust = 1, size = xaxis_tick_label_size)) +
@@ -208,10 +210,13 @@ draw_ha_stacked_plot <- function(df, sampleid_vector,
     theme(panel.border = element_rect(fill = NA), panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(), axis.line = element_line(colour = "black")) +
     guides(fill = guide_legend(reverse = TRUE, keywidth = 1, keyheight = 1)) +
-    theme(legend.text = element_text(size = 12, face = "italic"), legend.title = element_blank()) +
-    theme(legend.position = "right",
+    
+    theme(legend.text = element_markdown(size = 12),
+          legend.title = element_blank(),
+          legend.position = "right",
           legend.justification = "left",
-          legend.direction = "vertical") + 
+          legend.direction = "vertical") +
+    
     ylab("Relative abundance (%)") +
     facet_wrap(wrap_group, scales = "free_x", nrow = 1, strip.position = "bottom") +
     theme(panel.spacing = unit(0.25, units = "cm"),
