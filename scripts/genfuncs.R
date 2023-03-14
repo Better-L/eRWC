@@ -176,7 +176,7 @@ draw_PCA_contrib <- function(data, fp_meta, title, xaxis_tick_label_size = 12, c
   return(PCA_plt)
 }
 
-supplementary_plots <- function(data, fp_meta, title) {
+supplementary_plots <- function(data, fp_meta, title, color_columns=c("SubExperiment", "culture_type")) {
   # colorblind palette
   cpal <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499",
             "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
@@ -185,8 +185,8 @@ supplementary_plots <- function(data, fp_meta, title) {
   culture_dict <- list("None" = "control", "# remove e in eRWCeRM.y " = "y", "eRM.H.y" = "y", "eRM.HS.y" = "y", "eRM.o" = "o", "eRM.H.o" = "o", "eRM.HS.o" = "o")
   data <- data %>%
     mutate(AdjunctCulture = recode_factor(AdjunctCulture, !!!culture_dict))
-  p1 <- draw_PCA(data, fp_meta, title = title, color_col = "SubExperiment", cpal = cpal) #c('#b2182b','#fee391','#67a9cf','#2166ac'))
-  p2 <- draw_PCA(data, fp_meta, title = title, color_col = "AdjunctCulture", cpal = cpal) #c('#b2182b','#fee391','#67a9cf','#2166ac'))
+  p1 <- draw_PCA(data, fp_meta, title = title, color_col = color_columns[1], cpal = cpal) #c('#b2182b','#fee391','#67a9cf','#2166ac'))
+  p2 <- draw_PCA(data, fp_meta, title = title, color_col = color_columns[2], cpal = cpal) #c('#b2182b','#fee391','#67a9cf','#2166ac'))
   p3 <- draw_PCA_contrib(data, fp_meta, title = paste("Variables PCA - ", title), cpal = c("#00AFBB", "#E7B800", "#FC4E07"))
   plt <- ((p1 + p2 ) / (p3 + guide_area()) ) +  plot_layout(guides = 'auto') + 
     plot_annotation(tag_levels = "A") &
